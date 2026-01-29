@@ -1,0 +1,78 @@
+# Audio Transcription MCP - Docker Compose (Development)
+# Usage: docker compose up -d
+
+services:
+  audio-transcription:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cpu
+    container_name: audio-transcription-mcp
+    
+    # Environment configuration
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - WHISPER_MODEL=${WHISPER_MODEL:-large-v3}
+      - LANGUAGE=${LANGUAGE:-en}
+      - MAX_FILE_SIZE_GB=${MAX_FILE_SIZE_GB:-1}
+      - MCP_TRANSPORT=streamable-http
+      - MCP_PORT=8080
+    
+    # Volume mounts
+    volumes:
+      - ../input:/input:ro          # Audio files (read-only)
+      - ../output:/output           # Transcription results
+      - ../models:/root/.cache      # Model cache (persistent)
+    
+    # Port mapping
+    ports:
+      - "8080:8080"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Restart policy
+    restart: unless-stopped
+
+# =============================================================================
+# GPU Version (uncomment to use)
+# =============================================================================
+# services:
+#   audio-transcription:
+#     build:
+#       context: ..
+#       dockerfile: docker/Dockerfile.gpu
+#     container_name: audio-transcription-mcp
+#     
+#     environment:
+#       - HF_TOKEN=${HF_TOKEN}
+#       - WHISPER_MODEL=${WHISPER_MODEL:-large-v3}
+#       - LANGUAGE=${LANGUAGE:-en}
+#       - MAX_FILE_SIZE_GB=${MAX_FILE_SIZE_GB:-1}
+#       - MCP_TRANSPORT=streamable-http
+#       - MCP_PORT=8080
+#       - CUDA_VISIBLE_DEVICES=0
+#     
+#     volumes:
+#       - ../input:/input:ro
+#       - ../output:/output
+#       - ../models:/root/.cache
+#     
+#     ports:
+#       - "8080:8080"
+#     
+#     # GPU support
+#     runtime: nvidia
+#     deploy:
+#       resources:
+#         reservations:
+#           devices:
+#             - driver: nvidia
+#               count: 1
+#               capabilities: [gpu]
+#     
+#     restart: unless-stopped

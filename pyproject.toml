@@ -1,0 +1,99 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "audio-transcription-mcp"
+version = "0.1.0"
+description = "MCP server for audio transcription with speaker diarization using Faster-Whisper and pyannote.audio"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "ebmarquez" }
+]
+keywords = [
+    "mcp",
+    "audio",
+    "transcription",
+    "whisper",
+    "speaker-diarization",
+    "pyannote",
+    "speech-to-text"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "faster-whisper>=1.0.0",
+    "pyannote.audio>=3.1.0",
+    "pydub>=0.25.0",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+gpu = [
+    "nvidia-cublas-cu12",
+    "nvidia-cudnn-cu12",
+]
+
+[project.scripts]
+audio-transcription-mcp = "audio_transcription_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/ebmarquez/audio-transcription-mcp"
+Repository = "https://github.com/ebmarquez/audio-transcription-mcp"
+Issues = "https://github.com/ebmarquez/audio-transcription-mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/audio_transcription_mcp"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "S",      # flake8-bandit (security)
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "S101",   # use of assert (allowed in tests)
+]
+
+[tool.ruff.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --cov=src/audio_transcription_mcp --cov-report=term-missing"

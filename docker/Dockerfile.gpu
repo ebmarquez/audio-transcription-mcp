@@ -1,0 +1,93 @@
+# Audio Transcription MCP - GPU Dockerfile (NVIDIA CUDA)
+# Optimized for GPU-accelerated transcription
+
+# =============================================================================
+# Base: NVIDIA CUDA with cuDNN
+# =============================================================================
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04
+
+LABEL maintainer="ebmarquez"
+LABEL description="MCP server for audio transcription with speaker diarization (GPU)"
+LABEL version="0.1.0"
+
+WORKDIR /app
+
+# =============================================================================
+# System Dependencies
+# =============================================================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    ffmpeg \
+    libsndfile1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3
+
+# Upgrade pip
+RUN python -m pip install --upgrade pip
+
+# =============================================================================
+# Python Dependencies
+# =============================================================================
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install CUDA-specific packages for GPU acceleration
+RUN pip install --no-cache-dir \
+    nvidia-cublas-cu12 \
+    nvidia-cudnn-cu12
+
+# =============================================================================
+# Application Code
+# =============================================================================
+COPY src/ ./src/
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Create directories for volume mounts
+RUN mkdir -p /input /output /root/.cache/huggingface
+
+# =============================================================================
+# Environment Configuration
+# =============================================================================
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Required
+ENV HF_TOKEN=""
+
+# Whisper configuration
+ENV WHISPER_MODEL="large-v3"
+ENV LANGUAGE="en"
+
+# File processing
+ENV MAX_FILE_SIZE_GB="1"
+ENV INPUT_DIR="/input"
+ENV OUTPUT_DIR="/output"
+
+# MCP server
+ENV MCP_TRANSPORT="streamable-http"
+ENV MCP_PORT="8080"
+
+# CUDA configuration
+ENV CUDA_VISIBLE_DEVICES="0"
+ENV NVIDIA_VISIBLE_DEVICES="all"
+ENV NVIDIA_DRIVER_CAPABILITIES="compute,utility"
+
+# =============================================================================
+# Health Check
+# =============================================================================
+# Longer start period for GPU model loading
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:${MCP_PORT}/health || exit 1
+
+# =============================================================================
+# Expose & Run
+# =============================================================================
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]

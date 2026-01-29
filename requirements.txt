@@ -1,0 +1,25 @@
+# Audio Transcription MCP - Dependencies
+# Install with: pip install -r requirements.txt
+
+# MCP SDK
+mcp>=1.0.0
+
+# Audio Transcription
+faster-whisper>=1.0.0
+
+# Speaker Diarization
+pyannote.audio>=3.1.0
+
+# Audio Processing
+pydub>=0.25.0
+
+# ML Framework
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Optional: GPU acceleration (uncomment if using NVIDIA GPU)
+# nvidia-cublas-cu12
+# nvidia-cudnn-cu12

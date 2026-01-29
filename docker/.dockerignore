@@ -1,0 +1,53 @@
+# Docker build ignore patterns
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.installed.cfg
+*.egg
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual environments
+.env
+.venv
+env
+venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+tests/fixtures/sample_audio/*.mp3
+tests/fixtures/sample_audio/*.wav
+
+# Large files (use volume mounts)
+models/
+input/*.mp3
+input/*.wav
+output/*.md
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
